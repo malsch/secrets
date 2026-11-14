@@ -1,0 +1,17 @@
+# Never commit plaintext. Only *.enc.* files (sops-encrypted) are tracked.
+*
+!.gitignore
+!.sops.yaml
+!README.md
+!LICENSE
+!hooks/
+!hooks/*
+!bin/
+!bin/*
+!*.enc.yaml
+!*.enc.yml
+!*.enc.json
+!*.enc.env
+# age identities must never live here
+keys.txt
+*.agekey

@@ -1,0 +1,35 @@
+# sops configuration for the central secrets repo.
+#
+# Recipient keys (post-quantum age, `age-keygen -pq`). Where each private key lives:
+#   local_key   this machine: ~/.config/sops/age/keys.txt   (dev, staging)
+#   prod_key    where: ____                                 (prod)
+#   backup_key  offline, where: ____                        (everything)
+#
+# Replace a key when its device is lost/retired or it may have leaked: swap it
+# below, run `sops updatekeys -y` on every file.
+# Replace PUBLIC_KEY placeholders here:
+keys:
+  - &local_key  AGE1PQ_LOCAL_KEY_PUBLIC_KEY
+  - &prod_key   AGE1PQ_PROD_KEY_PUBLIC_KEY
+  - &backup_key AGE1PQ_BACKUP_KEY_PUBLIC_KEY
+
+# Per secret: a sibling key `<NAME>__RETIRES: "YYYY-MM-DD"` stays plaintext
+# (unencrypted_regex), so `bin/retiring` can check dates without decrypting.
+# It is still covered by the sops MAC, so it is tamper-evident.
+#
+# Rules match top-down; first match wins.
+creation_rules:
+  - path_regex: (^|/)prod\.enc\.(ya?ml|json|env)$
+    unencrypted_regex: __RETIRES$
+    key_groups:
+      - age: [*prod_key, *backup_key]
+
+  - path_regex: (^|/)staging\.enc\.(ya?ml|json|env)$
+    unencrypted_regex: __RETIRES$
+    key_groups:
+      - age: [*local_key, *backup_key]
+
+  - path_regex: \.enc\.(ya?ml|json|env)$      # dev.enc.yaml (default) and anything else
+    unencrypted_regex: __RETIRES$
+    key_groups:
+      - age: [*local_key, *backup_key]

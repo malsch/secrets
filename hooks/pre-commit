@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Refuse to commit *.enc.* files that are not actually sops-encrypted,
+# and anything that looks like an age private key.
+set -euo pipefail
+fail=0
+while IFS= read -r -d '' f; do
+  content=$(git show ":$f")
+  if grep -q 'AGE-SECRET-''KEY-' <<<"$content"; then
+    echo "pre-commit: $f contains an age PRIVATE key" >&2; fail=1
+  fi
+  case "$f" in
+    *.enc.yaml|*.enc.yml) grep -qE '^sops:' <<<"$content" || { echo "pre-commit: $f is not sops-encrypted" >&2; fail=1; } ;;
+    *.enc.json)           grep -q '"sops"' <<<"$content"  || { echo "pre-commit: $f is not sops-encrypted" >&2; fail=1; } ;;
+    *.enc.env)            grep -q '^sops_version=' <<<"$content" || { echo "pre-commit: $f is not sops-encrypted" >&2; fail=1; } ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACM -z)
+exit $fail

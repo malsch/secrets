@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# List secrets whose retirement date is past or within N days (default 30).
+# Reads the plaintext `<NAME>__RETIRES` entries; no decryption needed.
+# Usage: bin/retiring [days]     exit 1 if anything is due
+set -euo pipefail
+days=${1:-30}
+cd "$(dirname "$0")/.."
+today=$(date +%F); horizon=$(date -d "+$days days" +%F)
+due=0
+for f in *.enc.yaml *.enc.yml; do
+  [ -e "$f" ] || continue
+  while IFS= read -r line; do
+    name=${line%%__RETIRES:*}; d=$(sed -E 's/.*__RETIRES:[[:space:]]*"?([0-9-]+)"?.*/\1/' <<<"$line")
+    if [[ "$d" < "$today" ]]; then printf 'OVERDUE  %s  %-30s %s\n' "$d" "$name" "$f"; due=1
+    elif [[ "$d" < "$horizon" || "$d" == "$horizon" ]]; then printf 'SOON     %s  %-30s %s\n' "$d" "$name" "$f"; due=1
+    fi
+  done < <(grep -E '^[A-Za-z0-9_]+__RETIRES:' "$f" || true)
+done
+[ $due -eq 0 ] && echo "nothing retiring within $days days"
+exit $due
