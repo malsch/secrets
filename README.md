@@ -3,7 +3,7 @@
 A (typically private) folder for central, [SOPS](https://github.com/getsops/sops)-encrypted files with secrets shared across projects. Encrypted to post-quantum [age](https://github.com/FiloSottile/age) keys (`age1pq1…`, post-quantum
 hybrid ML-KEM-768 + X25519 key pair). Only recipients who have at least one of the private keys can use it to decrypt the secrets.
 
-This is a local setup, and cloud options have not been systematically explored. Key management services (KMS) in the cloud would likely be even safer. SOPS supports KMS-backed keys as well.
+This is a local setup. Secret managers (e.g., Bitwarden Secrets-Manager, Doppler) and other cloud options have not been systematically explored. Key management services (KMS) in the cloud would likely be the safest option. SOPS supports KMS-backed keys as well.
 
 Compared with a potentially more standard approach using the unix password manager [pass](https://www.passwordstore.org/), which encrypts one file
 per secret with GPG, this setup avoids GPG altogether: GPG is a general-purpose
