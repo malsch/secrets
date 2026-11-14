@@ -38,6 +38,13 @@ GITHUB_TOKEN__RETIRES: "2027-01-15"
   lists overdue/soon-due entries without decrypting (exit 1 if any; default
   30 days).
 
+## Installation
+
+```bash
+mise use -g sops age
+```
+
+More on using [SOPS with mise](https://mise.jdx.dev/environments/secrets/sops.html) (though we use a slighthly different setup).
 
 ## First-time setup
 
